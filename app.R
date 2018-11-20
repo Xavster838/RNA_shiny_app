@@ -5,11 +5,17 @@ Author: Xavi Guitart
 
 Description:
 Sequence monkey samples without touching anything
+
+
+Status: don't have directory button working: want to get that working by adding functionality to server
+
 "
 
 library(shiny)
 #directory input widget package
 library(shinyDirectoryInput)
+#source helper functions
+source("helpers.R")
 
 #===========================      Organization of App     ===========================#
 
@@ -85,8 +91,12 @@ ui <- navbarPage(
       ),
       mainPanel(
 
+        #Test Output:
         #output the name of the directory chosen:
-        textOutput(outputId = "selectedDir", )
+        textOutput(outputId = "selectedDir"),
+        #TestOutput:
+        #files in fastq
+        dataTableOutput(outputId = "fastq.files")
 
       )
     )
@@ -101,9 +111,37 @@ ui <- navbarPage(
 )
 
 
-server = function(input, output){
-  #nothing so far
+server = function(input, output, session){
+  
+  #initial path
+  path <- "~"
+  
+  #observe event of directory input icon
+  observeEvent(
+    ignoreNULL = TRUE,
+    eventExpr = {
+      input$base.results.dir
+    },
+    handlerExpr = {
+      if (input$base.results.dir > 0) {
+        # condition prevents handler execution on initial app launch
+        # launch the directory selection dialog with initial path read from the widget
+       path = choose.dir(default = readDirectoryInput(session, 'base.results.dir'))
+        # update the widget value
+        updateDirectoryInput(session, 'base.results.dir', value = path)
+      }
+    }
+  )
+  #show directory input on main manel
+  #get it each time base results dir changes
+  dirPassed <- reactive({readDirectoryInput(session, 'base.results.dir')})
+  #post on selectedDir output
+  output$selectedDir <- renderText({ dirPassed() })
+  #show fastq files : NOT working
+  output$fastq.files <- renderDataTable(expr = { getFastQsFromDir(inputDir = dirPassed() ) })
+  
 }
 
 
 shinyApp(ui = ui , server = server)
+
