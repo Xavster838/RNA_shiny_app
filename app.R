@@ -83,7 +83,7 @@ ui <- navbarPage(
 
                          #add base results directory: maybe text but I like choosing a directory more
                          # To Do: make this a smarter check box
-                         directoryInput(inputId = "base.results.dir" , label = "Directory for Results", value = ""),
+                         directoryInput(inputId = "base.results.dir" , label = "Directory for Results", value = "~"),
 
                          #ortholog file name
                          fileInput(inputId = "ortholog.file", label = "ortholog file")
@@ -138,7 +138,7 @@ server = function(input, output, session){
   #post on selectedDir output
   output$selectedDir <- renderText({ dirPassed() })
   #show fastq files : NOT working
-  output$fastq.files <- renderDataTable(expr = { getFastQsFromDir(inputDir = dirPassed() ) })
+  output$fastq.files <- renderDataTable(expr = { data.frame(getFastQsFromDir(inputDir = dirPassed() ) ) })
   
 }
 
